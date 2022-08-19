@@ -157,6 +157,9 @@ class ExternalFiles:
 		
 		self.Logtotextport(log_msg)
 
+		# manage asset consolidation
+		self.asset_consolidation(current_loc)
+
 		return
 
 	def Save_tox(self, current_loc):
@@ -214,6 +217,9 @@ class ExternalFiles:
 														project.folder, 
 														tox_path)
 			self.Logtotextport(log_msg)
+			
+			# manage asset consolidation
+			self.asset_consolidation(current_loc)
 		else:
 			pass
 
@@ -231,6 +237,19 @@ this TOX does not already exist.
 			buttons=["Okay"]
 		)
 
+	def asset_consolidation(self, targetOp):
+		if targetOp.par['Consolidate'] == None:
+			asset_page = targetOp.appendCustomPage("Assets")
+			asset_page.appendStr('Assetdir', label='Consolidation Directory')
+			asset_page.appendPulse('Consolidate', label='Gather Assets')
+			targetOp.par['Assetdir'] = 'Assets'
+		if targetOp.op('consolidate') == None:
+			consOp = targetOp.create(baseCOMP,'consolidate')
+			consOp.par.clone = parent().op('consolidate').path
+			consOp.par.extension1 = "op('./ConsolidateEXT').module.ConsolidateEXT(me)"
+			consOp.par.promoteextension1 = True
+			consOp.par.reinitextensions.pulse()
+
 	def update_custom_str_par(self, targetOp, par, value, par_label="Temp"):
 		if targetOp.par[par] != None:
 			targetOp.par[par] = value
@@ -239,6 +258,8 @@ this TOX does not already exist.
 			about_page.appendStr(par, label=par_label)
 			targetOp.par[par] = value
 			targetOp.par[par].readOnly = True
+
+			
 
 	def update_version_pars(self, target_op):
 		if target_op.par['Toxversion'] == None:
